@@ -1,0 +1,74 @@
+**lista de listos
+70-18
+20-9
+10-8
+40-5
+60-13
+30-7
+50-11
+80-14
+90-22
+
+70-13
+20-4
+60-8
+30-2
+50-6
+80-9
+
+70-8
+60-3
+50-1
+80-4
+
+70-3
+
+**se usa el cambio de prioridad para ordenarlos inicialmente
+**se hacen desbloqueados y luego bloqueados pero de la misma prioridad
+
+**lista de ejecucion
+70-13
+20-4
+10-destruye
+40-destruye
+60-8
+30-2
+50-6
+80-9
+90-17
+
+70-8
+20--1
+60-3
+30--3
+50-1
+80-5
+90-destruye
+
+70-3
+60--2
+50--4
+80-0
+
+70--2
+
+
+**cola de blqueo
+20
+90
+
+**cola de destruccion:
+10
+40
+90
+
+**cola de comunicacion:
+50
+
+**cola de salida:
+20
+30
+60
+50
+80
+70
