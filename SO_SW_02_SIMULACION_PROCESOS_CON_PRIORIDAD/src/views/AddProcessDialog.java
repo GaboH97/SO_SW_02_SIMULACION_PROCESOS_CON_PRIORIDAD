@@ -15,7 +15,6 @@ import logic.Process;
 public class AddProcessDialog extends javax.swing.JDialog {
 
     //--------------------- Constructores ----------------
-    
     public AddProcessDialog(java.awt.Frame parent, boolean modal, Controller controller) {
         super(parent, modal);
         setUndecorated(true);
@@ -39,19 +38,25 @@ public class AddProcessDialog extends javax.swing.JDialog {
 
     /**
      * Crea un nuevo proceso
-     * 
+     *
      * @return Una instancia de la clase Proceso
      */
     public Process createProcess() {
         Process process = null;
         String timeInput = executionTimejtf.getText();
         //Verifica que los campos no estén vacíos
-        if (!processNamejtf.getText().isEmpty() && !timeInput.isEmpty()) {
+        if (!processNamejtf.getText().isEmpty() && !timeInput.isEmpty() && !priorityjtf.getText().isEmpty()) {
             //Verifica que la entrada del tiempo de ejecución sea válida
-            if (isNumeric(executionTimejtf.getText())) {
+            if (isValidPositiveDouble(executionTimejtf.getText()) && isValidPositiveInteger(priorityjtf.getText())) {
                 //Hace una llamada del método estático de la lógica para crear
                 //una nueva instancia de la clase Proceso
-                process = ProcessManager.createProcess(processNamejtf.getText(), Double.parseDouble(timeInput), isLockjcb.isSelected());
+                process = ProcessManager.createProcess(processNamejtf.getText(),
+                        Double.parseDouble(timeInput),
+                        Integer.parseInt(priorityjtf.getText()),
+                        isLockjcb.isSelected(),
+                        doesCommunicatejcb.isSelected(),
+                        isDestroyedjcb.isSelected()
+                );
             } else {
                 JOptionPane.showMessageDialog(this,
                         GUIUtils.MSG_INVALID_TIME,
@@ -64,13 +69,17 @@ public class AddProcessDialog extends javax.swing.JDialog {
 
     /**
      * Verifica si una cadena de texto corresponde a un número decimal positivo
-     * 
+     *
      * @param str Una cadena de caracteres
      * @return true si la cadena de caracteres encaja con la expresión regular
-     *         para un número decimal positivo
+     * para un número decimal positivo
      */
-    public boolean isNumeric(String str) {
-        return str!=null && (str.matches("[+]?\\d*(\\.\\d+)?") && str.equals("") == false);
+    public boolean isValidPositiveDouble(String str) {
+        return str.matches("[+]?\\d*(\\.\\d+)?");
+    }
+    
+    public boolean isValidPositiveInteger(String str){
+        return str.matches(" /^[-+]?[1-9]\\d*$/");
     }
 
     @SuppressWarnings("unchecked")
@@ -86,6 +95,12 @@ public class AddProcessDialog extends javax.swing.JDialog {
         isLockjcb = new javax.swing.JCheckBox();
         createbtn = new javax.swing.JButton();
         cancelbtn = new javax.swing.JButton();
+        doesCommunicatejcb = new javax.swing.JCheckBox();
+        isDestroyedjcb = new javax.swing.JCheckBox();
+        priorityjtf = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        changePriorityjcb = new javax.swing.JCheckBox();
+        changePriorityjtf = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -113,6 +128,15 @@ public class AddProcessDialog extends javax.swing.JDialog {
             }
         });
 
+        doesCommunicatejcb.setText("¿Se comunica?");
+
+        isDestroyedjcb.setText("¿Se destruye?");
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText("Prioridad");
+
+        changePriorityjcb.setText("¿Cambia Prioridad?");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -125,26 +149,36 @@ public class AddProcessDialog extends javax.swing.JDialog {
                             .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jSeparator1)))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(47, 47, 47)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(47, 47, 47)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(isLockjcb)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel3)
-                                            .addComponent(jLabel2))
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(processNamejtf, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(executionTimejtf, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(117, 117, 117)
-                                .addComponent(createbtn)
+                                .addComponent(isLockjcb)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(doesCommunicatejcb)
                                 .addGap(18, 18, 18)
-                                .addComponent(cancelbtn)))
-                        .addGap(0, 34, Short.MAX_VALUE)))
+                                .addComponent(isDestroyedjcb))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(processNamejtf, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                    .addComponent(executionTimejtf, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                    .addComponent(priorityjtf)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(changePriorityjcb)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(changePriorityjtf, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 26, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(122, 122, 122)
+                .addComponent(createbtn)
+                .addGap(18, 18, 18)
+                .addComponent(cancelbtn)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -153,7 +187,7 @@ public class AddProcessDialog extends javax.swing.JDialog {
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(processNamejtf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -162,12 +196,23 @@ public class AddProcessDialog extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(executionTimejtf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(isLockjcb)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(priorityjtf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(isLockjcb)
+                    .addComponent(doesCommunicatejcb)
+                    .addComponent(isDestroyedjcb))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(changePriorityjcb)
+                    .addComponent(changePriorityjtf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createbtn)
                     .addComponent(cancelbtn))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addGap(36, 36, 36))
         );
 
         pack();
@@ -197,13 +242,19 @@ public class AddProcessDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelbtn;
+    private javax.swing.JCheckBox changePriorityjcb;
+    private javax.swing.JTextField changePriorityjtf;
     private javax.swing.JButton createbtn;
+    private javax.swing.JCheckBox doesCommunicatejcb;
     private javax.swing.JTextField executionTimejtf;
+    private javax.swing.JCheckBox isDestroyedjcb;
     private javax.swing.JCheckBox isLockjcb;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTextField priorityjtf;
     private javax.swing.JTextField processNamejtf;
     // End of variables declaration//GEN-END:variables
 }

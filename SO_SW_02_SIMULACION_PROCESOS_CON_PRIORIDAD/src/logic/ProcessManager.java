@@ -1,76 +1,41 @@
 package logic;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
- * Clase que representa el manejador de procesos. Se encarga de crear, agregar y
- * atender cada uno de los procesos de acuerdo a sus características. Su modo de
- * atención es FIFO (First Input, First Output), teniendo prelación sobre
- * aquellos procesos que no están bloqueados.
  *
- * @author Cesar Cardozo & Gabriel Amaya
+ * @author Cesar Cardozo
  */
 public class ProcessManager {
 
-    //------------------------ Atributos -----------------------------
-    /**
-     * Variable estática que representa el quantum por defecto
-     */
     public static final double DEFAULT_QUANTUM = 5;
-
-    /**
-     * Representa la lista de los procesos de entrada
-     */
     private ArrayList<Process> inputProcessList;
-
-    /**
-     * Representa la lista de los procesos de salida
-     */
-    private ArrayList<Process> outputProcessList;
-
-    /**
-     * Representa la lista de los procesos listos
-     */
+    private ArrayList<Process> inputSortedProcessList;
     private ArrayList<Process> readyProcessList;
-
-    /**
-     * Representa la lista de los procesos en ejecución
-     */
     private ArrayList<Process> executionProcessList;
-
-    /**
-     * Representa la lista de los procesos bloqueados
-     */
     private ArrayList<Process> lockedProcessList;
-
-    /**
-     * Representa la lista de los procesos expirados
-     */
+    private ArrayList<Process> destroyedProcessList;
+    private ArrayList<Process> comunicatedProcessList;
+    private ArrayList<Process> outputProcessList;
     private ArrayList<Process> expiredProcessList;
-
-    /**
-     * Representa la lista de los procesos que han sido despertados
-     */
     private ArrayList<Process> awakenProcessList;
-
-    /**
-     * Variable que representa el Quantum (modificable)
-     */
     private double quantum;
 
-    //------------------------ Constructores -----------------------------
     public ProcessManager() {
         this.quantum = DEFAULT_QUANTUM;
         this.inputProcessList = new ArrayList<>();
-        this.outputProcessList = new ArrayList<>();
+        this.inputSortedProcessList = new ArrayList<>();
         this.readyProcessList = new ArrayList<>();
         this.executionProcessList = new ArrayList<>();
         this.lockedProcessList = new ArrayList<>();
+        this.destroyedProcessList = new ArrayList<>();
+        this.comunicatedProcessList = new ArrayList<>();
+        this.outputProcessList = new ArrayList<>();
         this.expiredProcessList = new ArrayList<>();
         this.awakenProcessList = new ArrayList<>();
     }
 
-    //------------------------ Métodos -----------------------------
     /**
      * Agregar un nuevo proceso al manejador de procesos. En un principio, lo
      * agrega a la lista de procesos de entrada, luego a la lista de procesos
@@ -82,71 +47,46 @@ public class ProcessManager {
      * @return true si el proceso fue agregado, de lo contrario, false
      */
     public boolean addProcess(Process p) {
-        //Busca en la lista de procesos de entrada si existe un proceso con el 
-        //mismo nombre, si no, lo agrega a la lista de procesos de entrada, lista
-        //procesos listos y hace la transisiónde despachado
         if (searchProcess(p.getName(), inputProcessList) == null) {
             inputProcessList.add(p);
-            readyProcessList.add(p);
-            doTransition(executionProcessList, p.getName(), readyProcessList);
-            //dispatch(p.getName());
-            if (p.getIslock()) {
-                doTransition(lockedProcessList, p.getName(), executionProcessList);
-                //lock(p.getName());
-            }
             return true;
         } else {
             return false;
         }
     }
 
+
     /**
      *
-     * @param name El nombre el proceso
-     * @param executionTime El tiempo de ejecución del proceso
-     * @param islock Indica si está bloqueado
-     * @return Una nueva instancia de la clase Proceso con los datos ingresados
-     */
-    public static Process createProcess(String name, double executionTime,
-            boolean islock) {
-        return new Process(name, executionTime, islock);
-    }
-
-    /**
-     * Método que procesa los procesos
      */
     public void processProcesses() {
-        processProcessesUnlocked();
-        processProcesseslocked();
-    }
-
-    /**
-     * Método que procesa los procesos desbloqueados
-     */
-    private void processProcessesUnlocked() {
-        //
-        while (inputProcessList.size() - lockedProcessList.size() != outputProcessList.size()) {
-            //Recorre lista de procesos de entrada
-            for (Process p : inputProcessList) {
-                //Si el proceso no está bloqueado, pasa a mirar si su tiempo de
-                //ejecución es mayor a cero, si es así, atiende el proceso por
-                // el tiempo proporcionado por el procesador (quantum)
-                if (!p.getIslock()) {
-                    if (p.getExecutionTime() > 0) {
-                        attendProcess(p);
-                        //Revisa que si luego de atender el proceso ya no hay
-                        //remanentes de tiempo, lo agrega a la lista de procesos
-                        //de salida, de lo contrario, se agrega a la lista de
-                        //procesos expirados, hace la transición de expiración
-                        // y luego es despachado
-                        if (p.getExecutionTime() <= 0) {
-                            outputProcessList.add(p);
+        sortProcessList();
+        while (outputProcessList.size() != returnNumberOfUndestroyed(inputSortedProcessList)) {
+            for (Process p : inputSortedProcessList) {//recorrer la lista de procesos
+                if (!outputProcessList.contains(p) && !destroyedProcessList.contains(p)) {//si aun no ha salido el proceso continue
+                    readyProcessList.add(p);//despachar
+                    executionProcessList.add(p);//envielo a la lista de ejecucion
+                    p.setExecutionTime(p.getExecutionTime() - quantum);//restarle un ciclo de procesador
+                    if (p.isDestruct()) {
+                        executionProcessList.remove(executionProcessList.size() - 1);
+                        destroyedProcessList.add(p);
+                    }
+                    if (p.getExecutionTime() > 0) {//si ya termino
+                        if (p.isIsLock()) {//si esta bloqueado
+                            lockedProcessList.add(p);//envielo a la lista de bloqueos
+                            awakenProcessList.add(p);//envielo a la lista de despertar
+                            if (p.isDestruct()) {
+                                executionProcessList.add(p);//envielo a la lista de ejecucion
+                            }
                         } else {
-                            expiredProcessList.add(p);
-                            doTransition(readyProcessList, p.getName(), executionProcessList);
-                            //expire(p.getName());
-                            doTransition(executionProcessList, p.getName(), readyProcessList);
-                            //dispatch(p.getName());
+                            expiredProcessList.add(p);//envielo a la lista de expirados
+                        }
+                        if (p.isDoesComunicate() && (!comunicatedProcessList.contains(p))) {
+                            comunicatedProcessList.add(p);
+                        }
+                    } else {
+                        if (!p.isDestruct()) {
+                            outputProcessList.add(p);//enviarlo a la lista de salida
                         }
                     }
                 }
@@ -154,56 +94,11 @@ public class ProcessManager {
         }
     }
 
-    /**
-     * Método que procesa los procesos bloqueados
-     */
-    private void processProcesseslocked() {
-        //Condición de salida del bucle indica que todos los procesos en la lista 
-        //de entrada deben estar en la lista de procesos de salida (no necesariamente)
-        //en el mismo orden 
-        while (inputProcessList.size() != outputProcessList.size()) {
-            //Recorre la lista de procesos bloqueados, desbloquea dichos procesos
-            //y los agrega a la lista de procesos despertados si aun no están
-            //en dicha lista
-            for (Process p : lockedProcessList) {
-                p.setIslock(false);
-                if (!awakenProcessList.contains(p)) {
-                    awakenProcessList.add(p);
-                }
-                //Revisa si hay remanentes de tiempo de ejecución en el proceso
-                //si es así,  hace la transición de despertar, atiende el proceso,
-                //y luego hace la transición de despachar
-                if (p.getExecutionTime() > 0) {
-                    doTransition(readyProcessList, p.getName(),
-                            lockedProcessList);
-                    //awake(p.getName());
-                    attendProcess(p);
-                    //dispatch(p.getName());
-                    doTransition(executionProcessList, p.getName(),
-                            readyProcessList);
-                    //Revisa que si luego de atender el proceso ya no hay
-                    //remanentes de tiempo, lo agrega a la lista de procesos
-                    //de salida, de lo contrario, se agrega a la lista de
-                    //procesos expirados, hace la transición de expiración
-                    // y luego es despachado
-                    if (p.getExecutionTime() <= 0) {
-                        outputProcessList.add(p);
-                    } else {
-                        expiredProcessList.add(p);
-                    }
-                }
-            }
+    private void sortProcessList() {
+        for (Process process : inputProcessList) {
+            inputSortedProcessList.add(process);
         }
-    }
-
-    /**
-     *
-     * @param p El proceso a atender
-     * @return El proceso atendido
-     */
-    public Process attendProcess(Process p) {
-        p.setExecutionTime(p.getExecutionTime() - quantum);
-        return p;
+        Collections.sort(inputSortedProcessList);
     }
 
     /**
@@ -212,26 +107,10 @@ public class ProcessManager {
      * @param name Nombre del proceso
      * @param destinationList Lista de destino
      */
-    public void doTransition(ArrayList originList, String name,
-            ArrayList destinationList) {
+    public void doTransition(ArrayList originList, String name, ArrayList destinationList) {
         originList.add(searchProcess(name, destinationList));
     }
 
-    /*public void dispatch(String name) {
-        executionProcessList.add(searchProcess(name, readyProcessList));
-    }
-
-    public void expire(String name) {
-        readyProcessList.add(searchProcess(name, executionProcessList));
-    }
-
-    public void lock(String name) {
-        lockedProcessList.add(searchProcess(name, executionProcessList));
-    }
-
-    public void awake(String name) {
-        readyProcessList.add(searchProcess(name, lockedProcessList));
-    }*/
     /**
      * Busca el proceso con el nombre especificado dentro de la lista
      * especifica- da
@@ -249,14 +128,37 @@ public class ProcessManager {
         return null;
     }
 
-    //---------------- Getters & Setters -----------------------
-    
+    /**
+     *
+     * @param name El nombre el proceso
+     * @param executionTime El tiempo de ejecución del proceso
+     * @param priority La prioridad que tiene el proceso
+     * @param islock Indica si está bloqueado
+     * @param doesComunicate Indica si el proceso se comunica con otro proceso
+     * @param doesDestruct Indica si el proceso se debe destruir
+     * @return Una nueva instancia de la clase Proceso con los datos ingresados
+     */
+    public static Process createProcess(String name, double executionTime, int priority, boolean islock, boolean doesComunicate, boolean doesDestruct) {
+        return new Process(name, executionTime, priority, islock, doesComunicate, doesDestruct);
+    }
+
+    public int returnNumberOfUndestroyed(ArrayList<Process> list) {
+        int counter = 0;
+        for (Process process : list) {
+            if (!process.isDestruct()) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    //----------------Getters & setters-----------------------------------------
     public ArrayList<Process> getInputProcessList() {
         return inputProcessList;
     }
 
-    public ArrayList<Process> getOutputProcessList() {
-        return outputProcessList;
+    public ArrayList<Process> getInputSortedProcessList() {
+        return inputSortedProcessList;
     }
 
     public ArrayList<Process> getReadyProcessList() {
@@ -271,6 +173,18 @@ public class ProcessManager {
         return lockedProcessList;
     }
 
+    public ArrayList<Process> getDestroyedProcessList() {
+        return destroyedProcessList;
+    }
+
+    public ArrayList<Process> getCommunicatedProcessList() {
+        return comunicatedProcessList;
+    }
+
+    public ArrayList<Process> getOutputProcessList() {
+        return outputProcessList;
+    }
+
     public ArrayList<Process> getExpiredProcessList() {
         return expiredProcessList;
     }
@@ -279,19 +193,12 @@ public class ProcessManager {
         return awakenProcessList;
     }
 
+    public double getQuantum() {
+        return quantum;
+    }
+
     public void setQuantum(double quantum) {
         this.quantum = quantum;
     }
 
-    //------------------- To String ------------------------------
-    @Override
-    public String toString() {
-        return "ProcessManager{" + "\ninputProcessList=" + inputProcessList
-                + "\noutputProcessList=" + outputProcessList
-                + "\nreadyProcessList=" + readyProcessList
-                + "\nexcecutionProcessList=" + executionProcessList
-                + "\nlockedProcessList=" + lockedProcessList
-                + "\nexpiredProcessList=" + expiredProcessList
-                + "\nawakenProcessList=" + awakenProcessList + '}';
-    }
 }

@@ -3,7 +3,7 @@ package views;
 /**
  * Esta clase representa una serie de constantes utilizadas en las ventanas del
  * programa
- * 
+ *
  * @author Gabriel Huertas y Cesar Cardozo
  */
 public class GUIUtils {
@@ -11,15 +11,18 @@ public class GUIUtils {
     public static final String APP_TITLE = "Simulador de transicion de estados de procesos";
 
     //---------------- GUI TABLES HEADERS ------------------
-    public static final String[] ADD_PROCESSES_TABLE_HEADERS = new String[]{"Nombre", "Tiempo", "¿Está bloqueado?"};
+    public static final String[] ADD_PROCESSES_TABLE_HEADERS = new String[]{"Nombre", "Tiempo de Ejecución", "Prioridad", "¿Está bloqueado?", "¿Se destruye", "¿Se comunica?", "Cambio Prioridad"};
     public static final String[] PROCESSES_STATES_TABLE_HEADERS = new String[]{"Listo", "En Ejecución", "Bloqueado"};
     public static final String[] IO_PROCESSES_TABLE_HEADERS = new String[]{"Procesos de Entrada", "Procesos de Salida"};
     public static final String[] PROCESSES_TRANSITIONS_TABLE_HEADERS = new String[]{"Expirados", "Despertados"};
+    public static final String[] PROCESSES_EVENTS_TABLE_HEADERS = new String[]{"Destruidos", "Se comunican"};
 
     public static final String ADD_PROCESSES_LABEL_HEADER = "Procesos Agregados";
     public static final String PROCESSES_STATES_LABEL_HEADER = "Estados";
+    public static final String SORTED_PROCESSES_LABEL_HEADER = "Procesos ordenados por prioridad";
     public static final String IO_PROCESSES_LABEL_HEADER = "Procesos E/S";
-    public static final String PROCESSES_TRANSITIONS_LABEL_HEADER = "Transiciones";
+    public static final String PROCESSES_TRANSITIONS_LABEL_HEADER = "Transiciones de Estado";
+    public static final String PROCESSES_EVENTS_LABEL_HEADER = "Eventos";
 
     //---------------------- MESSAGES ----------------------
     public static final String MSG_EMPTY_FIELDS = "Hay campos vacíos";

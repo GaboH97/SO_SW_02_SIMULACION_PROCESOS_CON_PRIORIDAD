@@ -4,7 +4,6 @@ import controller.Actions;
 import controller.Controller;
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import logic.Process;
 import javax.swing.JFrame;
@@ -36,11 +35,13 @@ public class MainWindow extends javax.swing.JFrame {
      */
     public MainWindow(Controller controller) {
         tableModel = new DefaultTableModel(GUIUtils.ADD_PROCESSES_TABLE_HEADERS, 0);
-        //this.setUndecorated(true);
         this.setTitle(APP_TITLE);
+        this.setUndecorated(true);
         initComponents();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         setActions(controller);
         showOptions(true);
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
@@ -54,9 +55,11 @@ public class MainWindow extends javax.swing.JFrame {
         createProcessbtn = new javax.swing.JButton();
         exitbtn = new javax.swing.JButton();
         startbtn = new javax.swing.JButton();
-        processesbtn = new javax.swing.JButton();
+        processesESbtn = new javax.swing.JButton();
         statesbtn = new javax.swing.JButton();
         transitionsbtn = new javax.swing.JButton();
+        eventsbtn = new javax.swing.JButton();
+        processesbtn = new javax.swing.JButton();
         menulbl = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator1 = new javax.swing.JSeparator();
@@ -73,6 +76,7 @@ public class MainWindow extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -92,14 +96,20 @@ public class MainWindow extends javax.swing.JFrame {
         startbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
         startbtn.setText("Iniciar");
 
-        processesbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
-        processesbtn.setText("Procesos");
+        processesESbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
+        processesESbtn.setText("Procesos E/S");
 
         statesbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
         statesbtn.setText("Estados");
 
         transitionsbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
         transitionsbtn.setText("Transiciones");
+
+        eventsbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
+        eventsbtn.setText("Eventos");
+
+        processesbtn.setFont(new java.awt.Font("Tahoma", 0, 16)); // NOI18N
+        processesbtn.setText("Procesos");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -114,8 +124,10 @@ public class MainWindow extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(createProcessbtn))
-                    .addComponent(processesbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(transitionsbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(processesESbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(transitionsbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(eventsbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(processesbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -125,13 +137,17 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(createProcessbtn)
                 .addGap(18, 18, 18)
                 .addComponent(startbtn)
-                .addGap(28, 28, 28)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(processesbtn)
+                .addGap(18, 18, 18)
+                .addComponent(processesESbtn)
                 .addGap(18, 18, 18)
                 .addComponent(statesbtn)
                 .addGap(18, 18, 18)
                 .addComponent(transitionsbtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(eventsbtn)
+                .addGap(61, 61, 61)
                 .addComponent(exitbtn)
                 .addContainerGap())
         );
@@ -194,7 +210,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(tableHeaderlbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE))
         );
 
         jMenu1.setText("Configuración");
@@ -256,15 +272,16 @@ public class MainWindow extends javax.swing.JFrame {
         createProcessbtn.addActionListener(controller);
         startbtn.setActionCommand(Actions.START.name());
         startbtn.addActionListener(controller);
-        processesbtn.setActionCommand(Actions.SHOW_IO_PROCESSES.name());
-        processesbtn.addActionListener(controller);
-        transitionsbtn.setActionCommand(Actions.SHOW_TRANSITIONS.name());
+        processesESbtn.setActionCommand(Actions.SHOW_IO_PROCESSES.name());
+        processesESbtn.addActionListener(controller);
+        transitionsbtn.setActionCommand(Actions.SHOW_STATES_TRANSITIONS.name());
         transitionsbtn.addActionListener(controller);
         statesbtn.setActionCommand(Actions.SHOW_STATES.name());
         statesbtn.addActionListener(controller);
+        eventsbtn.setActionCommand(Actions.SHOW_PROCESSES_EVENTS.name());
+        eventsbtn.addActionListener(controller);
         defineQuantumjmi.setActionCommand(Actions.OPEN_DEFINE_QUANTUM.name());
         defineQuantumjmi.addActionListener(controller);
-
     }
 
     /**
@@ -286,7 +303,12 @@ public class MainWindow extends javax.swing.JFrame {
         //Agrega los datos del proceso en las columnas correspondientes
         tableModel.setValueAt(p.getName(), tableModel.getRowCount() - 1, 0);
         tableModel.setValueAt(p.getExecutionTime(), tableModel.getRowCount() - 1, 1);
-        tableModel.setValueAt((p.getIslock()) ? "Sí" : "No", tableModel.getRowCount() - 1, 2);
+        tableModel.setValueAt(p.getOldPriority(), tableModel.getRowCount() - 1, 2);
+        tableModel.setValueAt((p.isIsLock()) ? "Sí" : "No", tableModel.getRowCount() - 1, 3);
+        tableModel.setValueAt((p.isDestruct()) ? "Sí" : "No", tableModel.getRowCount() - 1, 4);
+        tableModel.setValueAt((p.isDoesComunicate()) ? "Sí" : "No", tableModel.getRowCount() - 1, 5);
+        tableModel.setValueAt((p.getPriority() == p.getOldPriority()) ? "" : p.getPriority(), tableModel.getRowCount() - 1, 6);
+
         this.repaint();
     }
 
@@ -324,9 +346,11 @@ public class MainWindow extends javax.swing.JFrame {
     public void showOptions(boolean isInitial) {
         createProcessbtn.setVisible(isInitial);
         startbtn.setVisible(isInitial);
-        processesbtn.setVisible(!isInitial);
+        processesESbtn.setVisible(!isInitial);
         statesbtn.setVisible(!isInitial);
         transitionsbtn.setVisible(!isInitial);
+        eventsbtn.setVisible(!isInitial);
+        processesbtn.setVisible(!isInitial);
     }
 
 
@@ -334,6 +358,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem checkManualjmi;
     private javax.swing.JButton createProcessbtn;
     private javax.swing.JMenuItem defineQuantumjmi;
+    private javax.swing.JButton eventsbtn;
     private javax.swing.JButton exitbtn;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -345,6 +370,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel menulbl;
+    private javax.swing.JButton processesESbtn;
     private javax.swing.JButton processesbtn;
     private javax.swing.JTable resultsTable;
     private javax.swing.JButton startbtn;
@@ -416,6 +442,33 @@ public class MainWindow extends javax.swing.JFrame {
         }
         for (int i = 0; i < awakenProcessList.size(); i++) {
             tableModel.setValueAt(awakenProcessList.get(i).getName(), i, 1);
+        }
+    }
+
+    public void showProcessesEvents(ArrayList<Process> destroyedProcessList, ArrayList<Process> communicatedProcessList) {
+        //Limpia la tabla, define los encabezados de la tabla y el título del panel
+        clearTable();
+        tableHeaderlbl.setText(GUIUtils.PROCESSES_EVENTS_LABEL_HEADER);
+        tableModel.setColumnIdentifiers(GUIUtils.PROCESSES_EVENTS_TABLE_HEADERS);
+        int sizeArrayA = destroyedProcessList.size();
+        int sizeArrayB = communicatedProcessList.size();
+        int major = (sizeArrayA > sizeArrayB) ? sizeArrayA : sizeArrayB;
+        tableModel.setRowCount(major);
+        //Agrega los valores iterando sobre la columna determinada
+        for (int i = 0; i < destroyedProcessList.size(); i++) {
+            tableModel.setValueAt(destroyedProcessList.get(i).getName(), i, 0);
+        }
+        for (int i = 0; i < communicatedProcessList.size(); i++) {
+            tableModel.setValueAt(communicatedProcessList.get(i).getName(), i, 1);
+        }
+    }
+
+    public void showSortedProcesses(ArrayList<Process> inputProcessList) {
+        clearTable();
+        tableHeaderlbl.setText(GUIUtils.SORTED_PROCESSES_LABEL_HEADER);
+        tableModel.setColumnIdentifiers(GUIUtils.ADD_PROCESSES_TABLE_HEADERS);
+        for (Process process : inputProcessList) {
+            addProcess(process);
         }
     }
 

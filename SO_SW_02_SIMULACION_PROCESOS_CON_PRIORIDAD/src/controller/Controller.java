@@ -48,6 +48,7 @@ public class Controller implements ActionListener {
         this.processManager = processManager;
         mainWindow = new MainWindow(this);
         addProcessDialog = new AddProcessDialog(mainWindow, true, this);
+
     }
 
     //----------------------- Métodos -------------------------
@@ -73,14 +74,20 @@ public class Controller implements ActionListener {
             case START:
                 start();
                 break;
+            case SHOW_SORTED_PROCESSES:
+                showSortedProcesses();
+                break;
             case SHOW_IO_PROCESSES:
                 showIOProcesses();
                 break;
             case SHOW_STATES:
                 showStates();
                 break;
-            case SHOW_TRANSITIONS:
+            case SHOW_STATES_TRANSITIONS:
                 showTransitions();
+                break;
+            case SHOW_PROCESSES_EVENTS:
+                showProcessesEvents();
                 break;
             case OPEN_DEFINE_QUANTUM:
                 openDefineQuantum();
@@ -129,7 +136,7 @@ public class Controller implements ActionListener {
         if (!processManager.getInputProcessList().isEmpty()) {
             processManager.processProcesses();
             mainWindow.showOptions(false);
-            showIOProcesses();
+            showSortedProcesses();
         } else {
             //Muestra un mensaje de error indicando que no hay procesos para eje-
             //cutarse
@@ -170,7 +177,7 @@ public class Controller implements ActionListener {
         String input = JOptionPane.showInputDialog(mainWindow, "Indique el nuevo valor del quantum");
         //Verifica que el String de entrada sea numérico y que no esté vacío
         //Si es así, cambia el Quantum del manejador de procesos
-        if (addProcessDialog.isNumeric(input) && !input.isEmpty()) {
+        if (addProcessDialog.isValidPositiveDouble(input) && !input.isEmpty()) {
             processManager.setQuantum(Double.parseDouble(input));
         } else {
             //Muestra un mensaje de error que indica que el tiempo ingresado es
@@ -182,8 +189,16 @@ public class Controller implements ActionListener {
         }
     }
 
+    private void showProcessesEvents() {
+        mainWindow.showProcessesEvents(processManager.getDestroyedProcessList(), processManager.getCommunicatedProcessList());
+    }
+
     public void setProcessManager(ProcessManager processManager) {
         this.processManager = processManager;
+    }
+    
+    private void showSortedProcesses(){
+        mainWindow.showSortedProcesses(processManager.getInputProcessList());
     }
 
 }
